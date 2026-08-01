@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Toca y descubre — Casa Sherman × tapnovaStudio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --beige:      #EFE6D2;
@@ -17,6 +14,9 @@
     --gold:       #C79A3E;
     --gold-soft:  #E9D6A5;
     --line:       rgba(51,48,43,0.14);
+    --font-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono:  'SF Mono', 'Courier New', Courier, monospace;
   }
   *{box-sizing:border-box;}
   body{
@@ -24,7 +24,7 @@
     min-height:100vh;
     background:var(--beige);
     color:var(--cardon);
-    font-family:'Work Sans', sans-serif;
+    font-family:var(--font-sans);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -34,7 +34,7 @@
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
   }
-  h1,h2{ font-family:'Fraunces', serif; margin:0; color:var(--cardon); }
+  h1,h2{ font-family:var(--font-serif); margin:0; color:var(--cardon); }
 
   .stage{
     width:100%;
@@ -57,7 +57,7 @@
   }
 
   .eyebrow{
-    font-family:'Space Mono', monospace;
+    font-family:var(--font-mono);
     font-size:11px;
     letter-spacing:0.22em;
     text-transform:uppercase;
@@ -72,7 +72,7 @@
     appearance:none; border:none; cursor:pointer;
     background:var(--pine);
     color:var(--beige-card);
-    font-family:'Work Sans', sans-serif;
+    font-family:var(--font-sans);
     font-size:15px; font-weight:600; letter-spacing:0.02em;
     padding:16px 40px;
     border-radius:100px;
@@ -100,7 +100,7 @@
 
   .tag{
     display:inline-block;
-    font-family:'Space Mono', monospace;
+    font-family:var(--font-mono);
     font-size:10px;
     letter-spacing:0.16em;
     text-transform:uppercase;
@@ -114,7 +114,7 @@
   .result-card h2{ font-size:26px; line-height:1.25; margin-bottom:14px; }
   .result-card .body-text{ font-size:15.5px; line-height:1.65; color:var(--cardon-soft); margin-bottom:6px; }
   .result-card .ref{
-    font-family:'Space Mono', monospace;
+    font-family:var(--font-mono);
     font-size:12px;
     color:var(--cardon-soft);
     margin-top:8px;
@@ -126,7 +126,7 @@
   }
   .btn-sm{
     appearance:none; cursor:pointer; text-decoration:none;
-    font-family:'Work Sans', sans-serif;
+    font-family:var(--font-sans);
     font-size:13px; font-weight:500;
     padding:11px 20px; border-radius:100px;
     border:1px solid var(--line);
@@ -147,7 +147,7 @@
 
   footer{
     margin-top:34px;
-    font-family:'Space Mono', monospace;
+    font-family:var(--font-mono);
     font-size:10px;
     letter-spacing:0.1em;
     text-transform:uppercase;
@@ -169,7 +169,7 @@
 
   .demo-badge{
     position:fixed; top:16px; right:16px;
-    font-family:'Space Mono', monospace;
+    font-family:var(--font-mono);
     font-size:10px;
     letter-spacing:0.1em;
     text-transform:uppercase;
@@ -285,8 +285,16 @@
     setTimeout(()=>wrap.remove(), 4200);
   }
 
+  // Analítica básica sin backend propio (CountAPI: gratis, sin auth).
+  // Namespace único por negocio para no mezclar contadores con otras demos.
+  const ANALYTICS_NS = 'tapnovastudio-casasherman';
+  function trackEvent(key){
+    fetch('https://api.countapi.xyz/hit/' + ANALYTICS_NS + '/' + key).catch(()=>{});
+  }
+
   function reveal(){
     const won = Math.random() < WIN_PROBABILITY;
+    trackEvent('taps'); // cuenta cada vez que alguien toca el sticker
 
     if(won){
       const p = PRIZES[Math.floor(Math.random()*PRIZES.length)];
@@ -297,6 +305,8 @@
       ref.textContent = p.ref + ' · Tap: ' + hora;
       actions.innerHTML = '<button class="btn-sm primary" id="shareBtn">Compartir mi premio</button>';
       launchConfetti();
+      trackEvent('premios'); // cuenta cuántos premios se han entregado
+      if(navigator.vibrate){ navigator.vibrate(200); }
     } else {
       const f = PHRASES[Math.floor(Math.random()*PHRASES.length)];
       tag.className = 'tag phrase'; tag.textContent = 'Para tu día';
