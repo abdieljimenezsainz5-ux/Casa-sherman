@@ -1,7 +1,7 @@
 window.TAP_CONFIG = {
   cliente: "CASA SHERMAN",
   creditoPie: "TAPNOVASTUDIO.MX",
-  probabilidadDePremio: 0.033, // 1 de cada 30 taps, aprox.
+  probabilidadDePremio: 0.5, // TEMPORAL para pruebas — regresar a 0.033 antes de publicar
 
   premios: [
     {
@@ -34,6 +34,13 @@ window.TAP_CONFIG = {
     { texto: "Que esta noche se quede en la memoria.", referencia: "Casa Sherman" },
     { texto: "La casa se siente en cada detalle.", referencia: "Casa Sherman" },
     { texto: "Comer bien también es celebrar.", referencia: "Casa Sherman" },
-    { texto: "Gracias por elegirnos para este momento.", referencia: "Casa Sherman" }
+    { texto: "Gracias por elegirnos para este momento.", referencia: "Casa Sherman" },
+    { texto: "El Señor es mi pastor, nada me faltará.", referencia: "Salmos 23:1" },
+    { texto: "Todo lo puedo en Cristo que me fortalece.", referencia: "Filipenses 4:13" },
+    { texto: "Da gracias al Señor, porque él es bueno.", referencia: "Salmos 107:1" },
+    { texto: "El gozo del Señor es nuestra fuerza.", referencia: "Nehemías 8:10" },
+    { texto: "En todo dad gracias.", referencia: "1 Tesalonicenses 5:18" },
+    { texto: "Este es el día que hizo el Señor; nos gozaremos en él.", referencia: "Salmos 118:24" },
+    { texto: "El amor es paciente, es bondadoso.", referencia: "1 Corintios 13:4" }
   ]
 };
