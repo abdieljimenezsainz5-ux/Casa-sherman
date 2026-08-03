@@ -279,66 +279,143 @@
   }
 
   function generateShareImage(isWin, titleText, bodyText, refText){
-    const W = 1080, H = 1350; // formato vertical, ideal para Instagram/Facebook
+    const W = 1080, H = 1350;
     const canvas = document.createElement('canvas');
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    const bg = isWin ? '#F4E9C9' : '#EFE6D2';
     const accent = isWin ? '#5C4310' : '#2C4736';
+    const pillBg = isWin ? '#E9D6A5' : 'rgba(44,71,54,0.12)';
     const cardBg = '#F9F4E7';
 
-    ctx.fillStyle = bg;
+    // Fondo con degradado suave
+    const bgGrad = ctx.createLinearGradient(0,0,0,H);
+    if(isWin){
+      bgGrad.addColorStop(0, '#F6ECD0');
+      bgGrad.addColorStop(1, '#EFE0BC');
+    } else {
+      bgGrad.addColorStop(0, '#F2EAD9');
+      bgGrad.addColorStop(1, '#E9DFC8');
+    }
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0,0,W,H);
 
-    // marca circular arriba
-    ctx.beginPath();
-    ctx.arc(W/2, 210, 90, 0, Math.PI*2);
-    ctx.fillStyle = '#2C4736';
-    ctx.fill();
-    ctx.fillStyle = '#F9F4E7';
-    ctx.beginPath();
-    ctx.arc(W/2, 210, 32, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = '#2C4736';
-    ctx.font = '700 46px Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('S', W/2, 226);
+    // textura sutil de línea diagonal (igual que la página)
+    ctx.save();
+    ctx.strokeStyle = isWin ? 'rgba(199,154,62,0.10)' : 'rgba(44,71,54,0.06)';
+    ctx.lineWidth = 2;
+    for(let i=-H; i<W+H; i+=46){
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i+H*0.5, H);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    // etiqueta
-    ctx.font = '700 22px sans-serif';
+    // marca circular con rayos tipo sunburst
+    const cx = W/2, cy = 225, rOuter = 118, rInner = 44;
+    const n = 40;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter, 0, Math.PI*2);
+    ctx.fillStyle = '#2C4736';
+    ctx.fill();
+    ctx.restore();
+
+    ctx.strokeStyle = '#F9F4E7';
+    for(let i=0;i<n;i++){
+      const angle = (i*(360/n)-90) * Math.PI/180;
+      const even = i%2===0;
+      const ri = even ? 48 : 52, ro = even ? 104 : 92;
+      ctx.lineWidth = even ? 3 : 2.4;
+      ctx.beginPath();
+      ctx.moveTo(cx+ri*Math.cos(angle), cy+ri*Math.sin(angle));
+      ctx.lineTo(cx+ro*Math.cos(angle), cy+ro*Math.sin(angle));
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, rInner, 0, Math.PI*2);
+    ctx.fillStyle = '#F9F4E7';
+    ctx.fill();
+    ctx.fillStyle = '#2C4736';
+    ctx.font = '700 56px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('S', cx, cy+20);
+
+    // píldora de etiqueta (Premio / Para tu día)
+    const label = isWin ? 'PREMIO' : 'PARA TU DÍA';
+    ctx.font = '700 24px sans-serif';
+    const labelW = ctx.measureText(label).width + 64;
+    const labelX = W/2 - labelW/2, labelY = 372;
+    roundRect(ctx, labelX, labelY, labelW, 52, 26);
+    ctx.fillStyle = pillBg;
+    ctx.fill();
     ctx.fillStyle = accent;
     ctx.textAlign = 'center';
-    ctx.fillText(isWin ? '★ PREMIO ★' : 'PARA TU DÍA', W/2, 350);
+    ctx.fillText(label, W/2, labelY+34);
 
-    // tarjeta central
-    const cardX = 80, cardY = 410, cardW = W-160, cardH = 620;
+    // tarjeta central con sombra elegante
+    const cardX = 80, cardY = 460, cardW = W-160, cardH = 570;
+    ctx.save();
+    ctx.shadowColor = 'rgba(51,48,43,0.18)';
+    ctx.shadowBlur = 45;
+    ctx.shadowOffsetY = 18;
+    roundRect(ctx, cardX, cardY, cardW, cardH, 32);
     ctx.fillStyle = cardBg;
-    roundRect(ctx, cardX, cardY, cardW, cardH, 28);
     ctx.fill();
+    ctx.restore();
+
+    // borde dorado fino
+    roundRect(ctx, cardX, cardY, cardW, cardH, 32);
+    ctx.strokeStyle = isWin ? 'rgba(199,154,62,0.55)' : 'rgba(44,71,54,0.15)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // línea decorativa superior dentro de la tarjeta
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(W/2-40, cardY+56);
+    ctx.lineTo(W/2+40, cardY+56);
+    ctx.stroke();
 
     ctx.fillStyle = '#33302B';
-    ctx.font = '600 52px Georgia, serif';
+    ctx.font = '600 54px Georgia, serif';
     ctx.textAlign = 'center';
-    const titleLines = wrapText(ctx, titleText, W/2, cardY+110, cardW-100, 64);
+    const titleLines = wrapText(ctx, titleText, W/2, cardY+140, cardW-110, 66);
 
     if(bodyText){
-      ctx.font = '400 32px sans-serif';
+      ctx.font = '400 30px sans-serif';
       ctx.fillStyle = '#4A453C';
-      wrapText(ctx, bodyText, W/2, cardY+110+titleLines*64+50, cardW-120, 44);
+      wrapText(ctx, bodyText, W/2, cardY+140+titleLines*66+46, cardW-140, 44);
     }
+
+    // línea decorativa inferior + referencia
+    const refY = cardY+cardH-70;
+    ctx.strokeStyle = 'rgba(51,48,43,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cardX+70, refY-26);
+    ctx.lineTo(cardX+cardW-70, refY-26);
+    ctx.stroke();
 
     ctx.font = '400 24px monospace';
     ctx.fillStyle = '#4A453C';
-    ctx.fillText(refText, W/2, cardY+cardH-50);
+    ctx.fillText(refText, W/2, refY+6);
 
     // pie de marca
-    ctx.font = '700 26px sans-serif';
+    ctx.font = '700 28px sans-serif';
     ctx.fillStyle = '#2C4736';
-    ctx.fillText('CASA SHERMAN', W/2, H-90);
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '2px';
+    ctx.fillText('CASA SHERMAN', W/2, H-88);
+    ctx.letterSpacing = '0px';
     ctx.font = '400 20px monospace';
-    ctx.fillStyle = '#4A453C';
-    ctx.fillText('TAPNOVASTUDIO.MX', W/2, H-55);
+    ctx.fillStyle = 'rgba(74,69,60,0.7)';
+    ctx.fillText('TAPNOVASTUDIO.MX', W/2, H-52);
 
     return canvas;
   }
