@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estadísticas — Casa Sherman × tapnovaStudio</title>
+<style>
+  :root{
+    --beige:#EFE6D2; --beige-card:#F9F4E7;
+    --cardon:#33302B; --cardon-soft:#4A453C;
+    --pine:#2C4736; --gold:#C79A3E; --gold-soft:#E9D6A5;
+    --line: rgba(51,48,43,0.14);
+    --font-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Courier New', Courier, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--beige); color:var(--cardon);
+    font-family:var(--font-sans); padding:32px 20px;
+  }
+  h1{ font-family:var(--font-serif); font-size:26px; margin:0 0 4px; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--cardon-soft); margin-bottom:28px;
+  }
+  .grid{ display:grid; gap:16px; max-width:420px; margin:0 auto; }
+  .card{
+    background:var(--beige-card); border:1px solid var(--line);
+    border-radius:18px; padding:26px 24px;
+  }
+  .card .label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--cardon-soft); margin-bottom:10px;
+  }
+  .card .num{ font-family:var(--font-serif); font-size:44px; font-weight:700; color:var(--pine); }
+  .card .sub{ font-size:13px; color:var(--cardon-soft); margin-top:6px; }
+  .card.gold .num{ color:#5C4310; }
+  .card.gold{ background:var(--gold-soft); }
+  .refresh-btn{
+    display:block; margin:22px auto 0; appearance:none; border:none; cursor:pointer;
+    background:var(--pine); color:var(--beige-card); font-family:var(--font-sans);
+    font-weight:600; font-size:13px; padding:12px 26px; border-radius:100px;
+  }
+  .loading{ text-align:center; color:var(--cardon-soft); font-size:13px; padding:20px; }
+  footer{
+    text-align:center; margin-top:34px; font-family:var(--font-mono);
+    font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--cardon-soft);
+  }
+</style>
+</head>
+<body>
+
+<div style="max-width:420px;margin:0 auto;">
+  <div class="eyebrow">Panel privado — no compartir este link</div>
+  <h1>Estadísticas del sticker</h1>
+</div>
+
+<div class="grid" style="margin-top:24px;">
+  <div class="card">
+    <div class="label">Toques totales</div>
+    <div class="num" id="taps">—</div>
+    <div class="sub">Veces que se ha usado el sticker desde el inicio</div>
+  </div>
+  <div class="card gold">
+    <div class="label">Premios entregados</div>
+    <div class="num" id="premios">—</div>
+    <div class="sub" id="tasaPremio">—</div>
+  </div>
+</div>
+
+<button class="refresh-btn" id="refreshBtn">Actualizar</button>
+<div class="loading" id="loadingMsg" style="display:none;">Cargando...</div>
+
+<footer>TAPNOVASTUDIO.MX</footer>
+
+<script>
+  const NS = 'tapnovastudio-casasherman';
+
+  async function getCount(key){
+    try{
+      const res = await fetch('https://api.countapi.xyz/get/' + NS + '/' + key);
+      const data = await res.json();
+      return data.value || 0;
+    }catch(e){
+      return null;
+    }
+  }
+
+  async function loadStats(){
+    document.getElementById('loadingMsg').style.display = 'block';
+    const [taps, premios] = await Promise.all([getCount('taps'), getCount('premios')]);
+
+    document.getElementById('taps').textContent = taps === null ? 'N/D' : taps;
+    document.getElementById('premios').textContent = premios === null ? 'N/D' : premios;
+
+    if(taps && premios !== null){
+      const tasa = taps > 0 ? ((premios/taps)*100).toFixed(1) : '0';
+      document.getElementById('tasaPremio').textContent = tasa + '% de los toques ganaron premio';
+    }
+    document.getElementById('loadingMsg').style.display = 'none';
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', loadStats);
+  loadStats();
+</script>
+
+</body>
+</html>
