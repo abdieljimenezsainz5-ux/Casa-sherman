@@ -179,8 +179,6 @@
 </head>
 <body>
 
-<div class="demo-badge">Demo — tapnovaStudio</div>
-
 <svg width="0" height="0" style="position:absolute">
   <symbol id="mark" viewBox="0 0 200 200">
     <circle cx="100" cy="100" r="98" fill="var(--pine)"/>
@@ -198,9 +196,7 @@
   <div id="idle">
     <div class="eyebrow" id="clienteNombre"></div>
     <h1>Toca y descubre<br>tu sorpresa.</h1>
-    <p>Acerca tu teléfono al sticker — o presiona el botón para simular el tap.</p>
-    <button class="tap-btn" id="tapBtn">Simular tap NFC</button>
-    <div class="tap-hint">1 de cada 30 taps gana un premio</div>
+    <p>Un momento, estamos preparando tu sorpresa...</p>
   </div>
 
   <div id="result" class="result-card">
@@ -209,10 +205,7 @@
     <p class="body-text" id="body"></p>
     <p class="ref" id="ref"></p>
     <div class="result-actions" id="actions"></div>
-  </div>
-
-  <div class="again" id="again" style="display:none;">
-    <button id="againBtn">Demo: volver a intentar</button>
+    <p id="alreadyPlayedNote" style="display:none; margin-top:20px; font-size:12px; color:var(--cardon-soft);">Ya participaste hoy — vuelve mañana por otra oportunidad.</p>
   </div>
 
   <footer id="creditoPie"></footer>
@@ -249,7 +242,6 @@
   document.getElementById('creditoPie').textContent = CFG.creditoPie;
 
   const markWrap = document.getElementById('markWrap');
-  const tapBtn = document.getElementById('tapBtn');
   const idle = document.getElementById('idle');
   const result = document.getElementById('result');
   const tag = document.getElementById('tag');
@@ -257,8 +249,6 @@
   const body = document.getElementById('body');
   const ref = document.getElementById('ref');
   const actions = document.getElementById('actions');
-  const again = document.getElementById('again');
-  const againBtn = document.getElementById('againBtn');
 
   function wrapText(ctx, text, x, y, maxWidth, lineHeight){
     const words = text.split(' ');
@@ -501,24 +491,50 @@
       shareAsImage(won, title.textContent, body.textContent, ref.textContent);
     });
 
+    // Guarda el resultado de hoy para no dejar volver a jugar hasta mañana
+    localStorage.setItem(PLAY_KEY, JSON.stringify({
+      date: todayStr(),
+      won: won,
+      title: title.textContent,
+      body: body.textContent,
+      ref: ref.textContent
+    }));
+
     idle.style.display = 'none';
     result.classList.add('show');
-    again.style.display = 'block';
   }
 
-  tapBtn.addEventListener('click', ()=>{
-    markWrap.classList.add('spinning');
-    tapBtn.disabled = true;
-    setTimeout(reveal, 900);
-  });
+  const PLAY_KEY = 'casaSherman_play';
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
 
-  againBtn.addEventListener('click', ()=>{
-    result.classList.remove('show');
-    again.style.display = 'none';
-    markWrap.classList.remove('spinning');
-    tapBtn.disabled = false;
-    setTimeout(()=>{ idle.style.display = 'block'; }, 300);
-  });
+  function showStoredResult(saved){
+    tag.className = saved.won ? 'tag win' : 'tag phrase';
+    tag.textContent = saved.won ? 'Premio' : 'Para tu día';
+    title.textContent = saved.title;
+    body.textContent = saved.body;
+    ref.textContent = saved.ref;
+    actions.innerHTML = '<button class="btn-sm primary" id="shareBtn">' + (saved.won ? 'Compartir mi premio' : 'Compartir frase') + '</button>';
+    document.getElementById('shareBtn').addEventListener('click', ()=>{
+      shareAsImage(saved.won, saved.title, saved.body, saved.ref);
+    });
+    document.getElementById('alreadyPlayedNote').style.display = 'block';
+    idle.style.display = 'none';
+    result.classList.add('show');
+  }
+
+  function startReveal(){
+    let saved = null;
+    try{ saved = JSON.parse(localStorage.getItem(PLAY_KEY)); }catch(e){}
+    if(saved && saved.date === todayStr()){
+      showStoredResult(saved);
+      return;
+    }
+    markWrap.classList.add('spinning');
+    setTimeout(reveal, 900);
+  }
+
+  // Se activa solo al abrir la página (simulando el tap real del NFC)
+  window.addEventListener('load', startReveal);
 </script>
 
 </body>
